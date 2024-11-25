@@ -60,6 +60,8 @@ class Payslip_List(APIView):
         }
 
         conditions = GlobalComponentConditions.objects.filter(Q(gender = gender) | Q(gender = 'all'),min_money__lte = salary, max_money__gte = salary)
+
+        customComponents = employee.customComponents.all()
         
 
         for condition in conditions:
@@ -81,6 +83,15 @@ class Payslip_List(APIView):
                     'name': condition.global_component.name,
                     'amount': tmp,
                 })
+        
+        for component in customComponents:
+            if component.component_type == 'compensation':
+                final_pay += component.amount
+                payslip['description']['compensations'].append({'name': component.name, 'amount': component.amount,})
+            else:
+                final_pay -= component.amount
+                payslip['description']['deductions'].append({'name': component.name, 'amount': component.amount,})
+
         
         payslip['final_amount'] = final_pay
 
