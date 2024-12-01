@@ -138,6 +138,8 @@ class Payslip_List(APIView):
         employees = request.user.department.employees.all()
         
         for employee in employees:
+            if not employee.payroll:
+                continue
             payslip = self.calculate_payroll(employee, request.data)
             serializer = PayslipSerializer(data = payslip)
             if serializer.is_valid():
